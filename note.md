@@ -496,6 +496,28 @@ chain.invoke(
 ```
 ### 4.5 Caching
 
+`the prompt needed to be exact same to use cached answers.`
+
+```python
+from langchain.chat_models import ChatOpenAI
+from langchain.callbacks import StreamingStdOutCallbackHandler
+from langchain.globals import set_llm_cache, set_debug
+from langchain.cache import InMemoryCache, SQLiteCache
+
+set_llm_cache(SQLiteCache("cache.db"))
+
+
+chat = ChatOpenAI(
+    temperature=0.1,
+    # streaming=True,
+    # callbacks=[
+    #     StreamingStdOutCallbackHandler(),
+    # ],
+)
+
+chat.predict("How do you make italian pasta")
+```
+### 4.6 Serialization
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
 인자 (Argument) : 실제로 함수를 호출할 때 넘기는 변수값 (value)
