@@ -98,3 +98,49 @@ chat.predict_messages(prompt)
 PromptTemplate and ChatPromptTemplate are similar But ChatPromptTemplate is more flexible. And it makes template with list of messages(tuple).
 
 ### 3.3 Output Parser and LECL
+
+* base output parser
+```python
+from langchain.schema import BaseOutputParser
+
+class CommaOutputParser(BaseOutputParser):
+    def parse(self, text):
+        items = text.strip().split(",")
+        return list(map(str.strip, items))
+```
+
+* Output Parser With no LECL
+```python
+template = ChatPromptTemplate.from_messages([
+    ("system", "You only reply with comma separated list of items. Do not include any other text. You answer maximum {max_items} items."),
+    ("human", "What are the cities in the world?"),
+])
+
+prompt = template.format_messages(max_items=10)
+
+result = chat.predict_messages(prompt)
+
+p = CommaOutputParser()
+p.parse(result.content)
+```
+
+* With LECL
+```python
+template = ChatPromptTemplate.from_messages([
+    ("system", "You are a list generating machine. Everthing you are asked You need to answer with a comma separated list of max {max_items} in list. Do NOT reply with anything else."),
+    ("human", "{question}")
+])
+
+chain = template | chat | CommaOutputParser()
+chain.invoke({
+  "max_items": 5,
+  "question": "What are the pokemons?",
+})
+
+# result
+# ['Pikachu', 'Charizard', 'Bulbasaur', 'Squirtle', 'Jigglypuff']
+```
+
+### 3.4
+
+## Problems
