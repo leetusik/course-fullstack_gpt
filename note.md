@@ -183,6 +183,8 @@ all_chain.invoke({
 
 ### 4.1 FewShotPromptTemplate
 
+`FewShotPromptTemplate takes four arguments in general. examples, example_template(which made by PromptTemplate.from_template), suffix, and input_variable from suffix.`
+
 ```python
 # PromptTemplate and ChatPromptTemplate
 from langchain.chat_models import ChatOpenAI
@@ -252,7 +254,64 @@ chain = prompt | chat
 chain.invoke({"country": "Japan"})
 ```
 
+### 4.2 FewShotChatMessagePromptTemplate
 
+`Well unlike Non ChatMessage prompt template, this one call chatprompttemplate twice. one for to put it in to fewshotchat..template and other for actual prompt. the thing have no suffix unlike previous one but put the real question at the end of fewshotchat..template`
+
+```python
+examples = [
+{
+"country": "France",
+"answer": """
+I know this:
+Capital: Paris
+Language: French
+Food: Wine and Cheese
+Currency: Euro
+""",
+},
+{
+"country": "Italy",
+"answer": """
+I know this:
+Capital: Rome
+Language: Italian
+Food: Pizza and Pasta
+Currency: Euro
+""",
+},
+{
+"country": "Greece",
+"answer": """
+I know this:
+Capital: Athens
+Language: Greek
+Food: Souvlaki and Feta Cheese
+Currency: Euro
+""",
+},
+]
+
+example_prompt = ChatPromptTemplate.from_messages([
+    ("human", "What do you know about {country}?"),
+    ("ai", "{answer}"),
+])
+
+example_prompt = FewShotChatMessagePromptTemplate(
+    example_prompt=example_prompt,
+    examples=examples,
+)
+
+final_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a geography expert. you give short answers"),
+    example_prompt,
+    ("human", "What do you know about {country}?"),
+])
+
+chain = final_prompt | chat
+
+chain.invoke({"country": "Japan"})
+```
 
 
 
@@ -268,6 +327,8 @@ chain.invoke({"country": "Japan"})
 
 
 ## Problems
+매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
+인자 (Argument) : 실제로 함수를 호출할 때 넘기는 변수값 (value)
 
 ## Thoughts
 
