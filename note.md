@@ -60,3 +60,41 @@ messages = [
 answer = chat.predict_messages(messages)
 answer
 ```
+
+### 3.2 Prompt Templates
+
+`before magic`
+```python
+# Basic Setting
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import PromptTemplate, ChatPromptTemplate
+
+chat = ChatOpenAI(model_name="gpt-4o-mini")
+```
+
+```python
+# when using PromptTemplate
+template = PromptTemplate.from_template("how far is the {city_a} from the {city_b}? And what is your name?")
+
+chat = ChatOpenAI(model_name="gpt-4o-mini")
+
+prompt = template.format(city_a="Seoul", city_b="Beijing")
+chat.predict(prompt)
+```
+
+```python
+# when using ChatPromptTemplate
+template = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful assistant that answers questions about the distance between cities. you only reply with {language}."),
+    ("ai", "안녕하세요? 제 이름은 {ai_name}이에요. 무엇을 도와릴까요?"),
+    ("human", "how far is the {city_a} from the {city_b}? And what is your name?"),
+])
+
+prompt = template.format_messages(language="Japanese", ai_name="Nakamura", city_a="Seoul", city_b="Beijing")
+
+chat.predict_messages(prompt)
+```
+
+PromptTemplate and ChatPromptTemplate are similar But ChatPromptTemplate is more flexible. And it makes template with list of messages(tuple).
+
+### 3.3 Output Parser and LECL
