@@ -494,6 +494,7 @@ chain.invoke(
     }
 )
 ```
+
 ### 4.5 Caching
 
 `the prompt needed to be exact same to use cached answers.`
@@ -517,7 +518,25 @@ chat = ChatOpenAI(
 
 chat.predict("How do you make italian pasta")
 ```
+
 ### 4.6 Serialization
+
+```python
+# can check usage with get_openai_callback
+from langchain.chat_models import ChatOpenAI
+from langchain.callbacks import get_openai_callback
+
+chat = ChatOpenAI(model_name="gpt-4o-mini")
+
+
+with get_openai_callback() as usage:
+    chat.predict("How do you make italian pizza and pasta")
+    print(usage)
+```
+
+Can save models and load models when using llms. maybe chat models are also possible.
+
+
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
 인자 (Argument) : 실제로 함수를 호출할 때 넘기는 변수값 (value)
