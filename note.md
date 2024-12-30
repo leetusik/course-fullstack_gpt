@@ -179,4 +179,97 @@ all_chain.invoke({
 # It says crazy about peter pan. Maybe I can use it for later like youtube short things.
 ```
 
+## 4. Modle I/O(Input/Output)
+
+### 4.1 FewShotPromptTemplate
+
+```python
+# PromptTemplate and ChatPromptTemplate
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate, PromptTemplate
+from langchain.callbacks import StreamingStdOutCallbackHandler
+
+chat = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.1, streaming=True, callbacks=[StreamingStdOutCallbackHandler()],)
+
+# The PromptTemplate can be detailed like input = somthing and template = something but just this is shortcut. just know there are smth like that.
+t = PromptTemplate.from_template("what is {this}")
+x = ChatPromptTemplate.from_messages([("system", "what is {this}"), ])
+```
+
+```
+In general, a "suffix" is a term used to describe a letter or group of letters added to the end of a word to change its meaning or grammatical function. For example, adding "-ing" to "run" forms "running," which changes the verb to its present participle form.
+In programming, a "suffix" can refer to a string or sequence of characters added to the end of another string. It is often used in file naming conventions, such as file extensions (e.g., ".txt", ".jpg"), or in algorithms and data structures, such as suffix trees or arrays, which are used for various string processing tasks.
+```
+
+```python
+
+examples = [
+{
+"question": "What do you know about France?",
+"answer": """
+Here is what I know:
+Capital: Paris
+Language: French
+Food: Wine and Cheese
+Currency: Euro
+""",
+},
+{
+"question": "What do you know about Italy?",
+"answer": """
+Here is what I know:
+Capital: Rome
+Language: Italian
+Food: Pizza and Pasta
+Currency: Euro
+""",
+},
+{
+"question": "What do you know about Greece?",
+"answer": """
+Here is what I know:
+Capital: Athens
+Language: Greek
+Food: Souvlaki and Feta Cheese
+Currency: Euro
+""",
+},
+]
+
+example_prompt = PromptTemplate.from_template("Human: {question}\nAI: {answer}")
+
+prompt = FewShotPromptTemplate(
+    example_prompt=example_prompt,
+    examples=examples,
+    suffix="Human: What do you know about {country}?",
+    input_variables=["country"],
+)
+
+# prompt.format(country="Germany")
+
+chain = prompt | chat
+
+chain.invoke({"country": "Japan"})
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Problems
+
+## Thoughts
+
+4.1.1
+    well maybe retriever takes relative context and fewshotPromptTemplate give those as example. that would be efficient. 
