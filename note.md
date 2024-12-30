@@ -21,3 +21,10 @@ pip freeze > requirements.txt
 pip install -r requirements.txt
 ```
 
+
+### 2.6 jupyter notebook
+
+`jupyter commends`
+
+esc + d + d : delete cell
+commend + enter : add code cell
