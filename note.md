@@ -97,7 +97,7 @@ chat.predict_messages(prompt)
 
 PromptTemplate and ChatPromptTemplate are similar But ChatPromptTemplate is more flexible. And it makes template with list of messages(tuple).
 
-### 3.3 Output Parser and LECL
+### 3.3 Output Parser and LCEL(LangChain Expression Language)
 
 * base output parser
 ```python
@@ -130,7 +130,7 @@ template = ChatPromptTemplate.from_messages([
     ("system", "You are a list generating machine. Everthing you are asked You need to answer with a comma separated list of max {max_items} in list. Do NOT reply with anything else."),
     ("human", "{question}")
 ])
-
+# LCEL do format_messages, chat.predict, outputparser.parse with below chain.
 chain = template | chat | CommaOutputParser()
 chain.invoke({
   "max_items": 5,
@@ -141,6 +141,42 @@ chain.invoke({
 # ['Pikachu', 'Charizard', 'Bulbasaur', 'Squirtle', 'Jigglypuff']
 ```
 
-### 3.4
+### 3.4 Chaining Chains
+![chain components](/img/chain_components.png)
+Gives Prompt when invoke.
+
+```python
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+# callbacks are magical things for now but explained later so nomad said.
+from langchain.callbacks import StreamingStdOutCallbackHandler
+
+chat = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.1, streaming=True, callbacks=[StreamingStdOutCallbackHandler()],)
+
+tail_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a fairy tail expert. You tell about the fairy tail's story that human ask."),
+    ("human", "{fairy_tail}")
+])
+
+tail_chain = tail_prompt | chat
+```
+
+```python
+odd_story_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a very good story teller. You get a story, and You answer about it but twist the plot little oddly."),
+    ("human", "{story}")
+])
+
+odd_chain = odd_story_prompt | chat
+```
+
+```python
+all_chain = {"story": tail_chain} | odd_chain
+all_chain.invoke({
+    "fairy_tail": "Peter Pan"
+})
+
+# It says crazy about peter pan. Maybe I can use it for later like youtube short things.
+```
 
 ## Problems
