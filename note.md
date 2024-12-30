@@ -385,14 +385,116 @@ prompt = FewShotPromptTemplate(
 prompt.format(country="Brazil")
 ```
 
+### 4.4 Serialization and Composition
 
 
+use it when lot of prompt or.. there are maker for prompting.
+
+```python
+from langchain.chat_models import ChatOpenAI
+from langchain.callbacks import StreamingStdOutCallbackHandler
+from langchain.prompts import load_prompt
+
+prompt = load_prompt("prompt.yaml")
+prompt = load_prompt("prompt.json")
+
+chat = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.1, streaming=True, callbacks=[StreamingStdOutCallbackHandler()],)
+
+prompt.format(country="Kimchi")
+```
+
+And here is somthing called pipelinePromptTemplate.
+```json
+// prompt.json
+{
+    "_type": "prompt",
+    "template": "What is your {country}",
+    "input_variables": ["country"]
+}
+```
+
+```yaml
+# prompt.yaml
+_type: "prompt"
+template: "What is your {country}"
+input_variables: ["country"]
+```
+
+```python
+
+from langchain.chat_models import ChatOpenAI
+from langchain.callbacks import StreamingStdOutCallbackHandler
+from langchain.prompts import PromptTemplate
+from langchain.prompts.pipeline import PipelinePromptTemplate
+
+chat = ChatOpenAI(
+    temperature=0.1,
+    streaming=True,
+    callbacks=[
+        StreamingStdOutCallbackHandler(),
+    ],
+)
+
+intro = PromptTemplate.from_template(
+    """
+    You are a role playing assistant.
+    And you are impersonating a {character}
+"""
+)
+
+example = PromptTemplate.from_template(
+    """
+    This is an example of how you talk:
+
+    Human: {example_question}
+    You: {example_answer}
+"""
+)
+
+start = PromptTemplate.from_template(
+    """
+    Start now!
+
+    Human: {question}
+    You:
+"""
+)
+
+final = PromptTemplate.from_template(
+    """
+    {intro}
+                                     
+    {example}
+                              
+    {start}
+"""
+)
+
+prompts = [
+    ("intro", intro),
+    ("example", example),
+    ("start", start),
+]
 
 
+full_prompt = PipelinePromptTemplate(
+    final_prompt=final,
+    pipeline_prompts=prompts,
+)
 
 
+chain = full_prompt | chat
 
-
+chain.invoke(
+    {
+        "character": "Pirate",
+        "example_question": "What is your location?",
+        "example_answer": "Arrrrg! That is a secret!! Arg arg!!",
+        "question": "What is your fav food?",
+    }
+)
+```
+### 4.5 Caching
 
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
