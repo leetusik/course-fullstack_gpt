@@ -537,6 +537,22 @@ with get_openai_callback() as usage:
 Can save models and load models when using llms. maybe chat models are also possible.
 
 
+
+## 5. Memory
+
+### 5.1 ConversationBufferMemory
+```Memory is for Memorization for the chatbot. for continuos chat.```
+
+```python
+from langchain.memory import ConversationBufferMemory
+
+memory = ConversationBufferMemory(return_messages=True)
+memory.save_context({"input":"Kimchi"}, {"output": "FA"})
+memory.load_memory_variables({})
+```
+### 5.2
+
+
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
 인자 (Argument) : 실제로 함수를 호출할 때 넘기는 변수값 (value)
