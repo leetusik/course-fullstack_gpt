@@ -593,11 +593,61 @@ The result:
 """
 ```
 
-### 5.4 
+### 5.3(밀림) ConversationSummaryBufferMemory
+
+```python
+from langchain.memory import ConversationSummaryBufferMemory
+from langchain.chat_models import ChatOpenAI
+
+chat = ChatOpenAI(temperature=0.1, model="gpt-4o-mini")
+
+memory = ConversationSummaryBufferMemory(llm=chat, return_messages=True)
+memory.max_token_limit = 100
+
+def add_message(input, output):
+    memory.save_context({"input":input}, {"output":output})
+
+def get_history():
+    return memory.load_memory_variables({})
+
+add_message("Hi my name is Lee and I love to run.", "Nice to meet you Mr. Lee. It's great to hear you like running!")
+add_message("And My grandpa is awesome human being.", "Oh! I see. Your grandpa is great person.")
+add_message("He taught me how to fish when I was young.", "That's wonderful! Fishing with grandparents creates such special memories.")
+add_message("We used to go camping by the river every summer.", "Those sound like beautiful summer traditions. Camping and fishing are great ways to bond.")
+add_message("He also taught me to always be kind to others.", "Your grandpa sounds very wise. Teaching kindness is one of the most valuable lessons.")
+add_message("I try to live by his example every day.", "That's really admirable. Carrying forward positive values from our elders is so important.")
+add_message("I hope I can be that kind of role model someday too.", "I'm sure you will be! You clearly learned great values from your grandpa.")
+
+get_history()
+
+# the result
+"""
+{'history': [SystemMessage(content="The human, named Lee, introduces himself and shares his love for running. The AI responds positively, expressing pleasure in hearing about Lee's interest in running. Lee mentions that his grandpa is an awesome human being, to which the AI agrees. Lee adds that his grandpa taught him how to fish when he was young, and the AI acknowledges that fishing with grandparents creates special memories. Lee further shares that they used to go camping by the river every summer, and the AI notes that those sound like beautiful summer traditions. Lee concludes by stating that his grandpa taught him to always be kind to others."),
+  AIMessage(content='Your grandpa sounds very wise. Teaching kindness is one of the most valuable lessons.'),
+  HumanMessage(content='I try to live by his example every day.'),
+  AIMessage(content="That's really admirable. Carrying forward positive values from our elders is so important."),
+  HumanMessage(content='I hope I can be that kind of role model someday too.'),
+  AIMessage(content="I'm sure you will be! You clearly learned great values from your grandpa.")]}
+"""
+```
+
+### 5.4
+
+
+### 5.5 
+
+---
 
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
 인자 (Argument) : 실제로 함수를 호출할 때 넘기는 변수값 (value)
+
+### 5.3 ConversationSummaryBufferMemory
+
+the error:
+```base
+NotImplementedError: get_num_tokens_from_messages() is not presently implemented for model cl100k_base.See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.
+```
 
 ## Thoughts
 
