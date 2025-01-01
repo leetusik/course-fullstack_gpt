@@ -550,7 +550,7 @@ memory = ConversationBufferMemory(return_messages=True)
 memory.save_context({"input":"Kimchi"}, {"output": "FA"})
 memory.load_memory_variables({})
 ```
-### 5.2
+### 5.2 ConversationBufferWindowMemory
 ```python
 from langchain.memory import ConversationBufferWindowMemory
 
@@ -565,8 +565,35 @@ for i in range(1, 6):
 # the result contains only 2, 2 to 5, 5
 memory.load_memory_variables({})
 ```
-### 5.3
+### 5.3 ConservationSummaryMemory
 
+```python
+from langchain.memory import ConversationSummaryMemory
+from langchain.chat_models import ChatOpenAI
+
+chat = ChatOpenAI(temperature=0.1, model="gpt-4o-mini")
+
+memory = ConversationSummaryMemory(llm=chat)
+
+def add_message(input, output):
+    memory.save_context({"input":input}, {"output":output})
+
+def get_history():
+    return memory.load_memory_variables({})
+
+add_message("Hi my name is Lee and I love to run.", "Nice to meet you Mr. Lee. It's great to hear you like running!")
+add_message("And My grandpa is awesome human being.", "Oh! I see. Your grandpa is great person.")
+
+get_history()
+
+# It might seems not like efficient but as conversation gets longer, the summary buffer gets better.
+"""
+The result:
+{'history': "The human, named Lee, introduces himself and shares his love for running. The AI responds positively, expressing pleasure in hearing about Lee's interest in running. Lee also mentions that his grandpa is an awesome human being, to which the AI acknowledges and agrees that Lee's grandpa is a great person."}
+"""
+```
+
+### 5.4 
 
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
