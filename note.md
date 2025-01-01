@@ -551,6 +551,21 @@ memory.save_context({"input":"Kimchi"}, {"output": "FA"})
 memory.load_memory_variables({})
 ```
 ### 5.2
+```python
+from langchain.memory import ConversationBufferWindowMemory
+
+memory = ConversationBufferWindowMemory(return_messages=True, k=4)
+def add_message(input, output):
+    memory.save_context({"input":input}, {"output": output})
+
+# save 1, 1 to 5, 5
+for i in range(1, 6):
+    add_message(i, i)
+
+# the result contains only 2, 2 to 5, 5
+memory.load_memory_variables({})
+```
+### 5.3
 
 
 ## Problems
