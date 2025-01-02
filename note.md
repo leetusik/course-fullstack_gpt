@@ -802,6 +802,46 @@ invoke_chain("My name is nico")
 invoke_chain("What is my name?")
 ```
 
+### 5.8 Memory Recap
+`I also think the manual process is better then automatics.`
+
+```python
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationSummaryBufferMemory
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.schema.runnable import RunnablePassthrough
+
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.1,)
+
+memory = ConversationSummaryBufferMemory(
+    llm=llm,
+    max_token_limit=80,
+    return_messages=True,
+)
+# from messages!
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful AI assistant."),
+    MessagesPlaceholder(variable_name="history"),
+    ("human", "{question}"),
+])
+
+def load_memory(input):
+    return memory.load_memory_variables({})["history"]
+
+chain = RunnablePassthrough.assign(history=load_memory) | prompt | llm
+
+def chain_invoke(question):
+    result = chain.invoke({
+        "question":question
+    })
+    memory.save_context({"input":question},{"output":result.content},)
+    print(result)
+
+chain_invoke("my name is Sugang.")
+```
+
+
 ###
 ---
 
