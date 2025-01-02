@@ -702,6 +702,7 @@ chain.predict(question="What is my name?")
 
 ### 5.6 Chat Based Memory
 `memory output could be in two ways. one is just string and second is messages?`
+`link memory and predefined chain.`
 
 Just String:
 ```python
@@ -755,8 +756,53 @@ chain.predict(question="What is my name?")
 
 
 
-### 5.7
+### 5.7 LCEL Based Memory
+`link memory with custom chain(LCEL)`
 
+```python
+
+from langchain.memory import ConversationSummaryBufferMemory
+from langchain.chat_models import ChatOpenAI
+from langchain.schema.runnable import RunnablePassthrough
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+llm = ChatOpenAI(temperature=0.1, model="gpt-4o-mini")
+
+memory = ConversationSummaryBufferMemory(
+    llm=llm,
+    max_token_limit=120,
+    return_messages=True,
+)
+
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", "You are a helpful AI talking to a human"),
+        MessagesPlaceholder(variable_name="history"),
+        ("human", "{question}"),
+    ]
+)
+
+
+def load_memory(_):
+    return memory.load_memory_variables({})["history"]
+
+chain = RunnablePassthrough.assign(history=load_memory) | prompt | llm
+
+
+def invoke_chain(question):
+    result = chain.invoke({"question": question})
+    # save_context -> history로 넘어감
+    memory.save_context(
+        {"input": question},
+        {"output": result.content},
+    )
+    print(result)
+
+invoke_chain("My name is nico")
+invoke_chain("What is my name?")
+```
+
+###
 ---
 
 ## Problems
