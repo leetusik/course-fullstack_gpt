@@ -803,7 +803,7 @@ invoke_chain("What is my name?")
 ```
 
 ### 5.8 Memory Recap
-`I also think the manual process is better then automatics.`
+`I also think the manual process is better then automatics. `
 
 ```python
 from langchain.chat_models import ChatOpenAI
@@ -842,7 +842,29 @@ chain_invoke("my name is Sugang.")
 ```
 
 
-###
+## 6. RAG Retriever Augmented Generation
+
+### 6.0 Introduction
+
+### 6.1 Data Loaders and Splitters
+`newer versions.. don't know how to do it. I think do it with legacy first and replace the deprecated things with new one is fastest way i guess right now. just keep work it. especially, unstructuredFileLoader not work at newer version or needed api key."
+
+```python
+from langchain.chat_models import ChatOpenAI
+from langchain.document_loaders import UnstructuredFileLoader
+from langchain.text_splitter import CharacterTextSplitter
+
+splitter = CharacterTextSplitter(
+    separator="\n",
+    chunk_size=300,
+    chunk_overlap=50,
+)
+
+loader = UnstructuredFileLoader("./files/moby_dick.pdf")
+len(loader.load_and_split(text_splitter=splitter))
+```
+
+### 6.2
 ---
 
 ## Problems

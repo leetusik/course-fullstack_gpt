@@ -171,3 +171,5 @@ cython_debug/
 .pypirc
 
 # additional
+venv2
+files
