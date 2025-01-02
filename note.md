@@ -864,7 +864,70 @@ loader = UnstructuredFileLoader("./files/moby_dick.pdf")
 len(loader.load_and_split(text_splitter=splitter))
 ```
 
-### 6.2
+### 6.2 Tiktoken
+
+```python
+from langchain.chat_models import ChatOpenAI
+from langchain.document_loaders import UnstructuredFileLoader
+from langchain.text_splitter import CharacterTextSplitter
+
+# by adding from_tiktoken_encoder, chunk_size spllited by tokens not len(python basic)
+splitter = CharacterTextSplitter.from_tiktoken_encoder(
+    separator="\n",
+    chunk_size=300,
+    chunk_overlap=50,
+)
+
+loader = UnstructuredFileLoader("./files/moby_dick.pdf")
+len(loader.load_and_split(text_splitter=splitter))
+```
+
+### 6.3,4 Vectors
+```python
+from langchain.chat_models import ChatOpenAI
+from langchain.document_loaders import UnstructuredFileLoader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings, CacheBackedEmbeddings
+from langchain.vectorstores import Chroma
+from langchain.storage import LocalFileStore
+
+cache_dir = LocalFileStore("./.cache/")
+
+splitter = CharacterTextSplitter.from_tiktoken_encoder(
+    separator="\n",
+    chunk_size=300,
+    chunk_overlap=50,
+)
+
+# load docs
+loader = UnstructuredFileLoader("./files/moby_dick.txt")
+
+# transform(split) docs
+docs = loader.load_and_split(text_splitter=splitter)
+
+
+embeddings = OpenAIEmbeddings(
+    model = "text-embedding-3-small"
+)
+# embed docs
+cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
+    embeddings, cache_dir
+)
+
+# store docs as vectorstoree(?)
+vectorstore = Chroma.from_documents(docs, cached_embeddings)
+
+# retrieve docs
+vectorstore.similarity_search("What does Ishmael do?")
+```
+
+
+
+###
+###
+###
+###
+###
 ---
 
 ## Problems
