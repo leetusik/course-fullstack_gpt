@@ -923,10 +923,66 @@ vectorstore.similarity_search("What does Ishmael do?")
 
 
 
-###
-###
-###
-###
+### 6.5 langsmith
+```.emv
+LANGCHAIN_API_KEY="lsv2_p..9bae25"
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
+```
+### 6.6 LLMChain(legacy)
+pass!
+
+### 6.7 Recap
+
+
+### 6.8 Stuff LCEL Chain
+```python
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings  # Updated import
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import CacheBackedEmbeddings
+from langchain.document_loaders import TextLoader
+from langchain.vectorstores import FAISS
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema.runnable import RunnablePassthrough
+from langchain.storage import LocalFileStore
+
+
+llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.1)
+
+cache_dir = LocalFileStore("./.cache/")
+
+splitter = CharacterTextSplitter.from_tiktoken_encoder(
+    separator="\n",
+    chunk_size=600,
+    chunk_overlap=100,
+)
+
+loader = TextLoader("./files/moby_dick.txt")
+
+docs = loader.load_and_split(text_splitter=splitter)
+
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+
+# Correct the method call and argument
+cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
+    underlying_embeddings=embeddings,  # Assuming 'embeddings' is your Embeddings object
+    document_embedding_cache=cache_dir,  # Assuming 'cache_dir' is your ByteStore object
+)
+
+vectorstore = FAISS.from_documents(documents=docs, embedding=cached_embeddings)
+
+retriever = vectorstore.as_retriever()
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful assistant that can answer questions about the text. if you don't know the answer, just say that you don't know.:\n\n{context}"),
+    ("human", "{question}"),
+])
+
+chain = {"context": retriever, "question": RunnablePassthrough()} | prompt | llm
+
+
+chain.invoke("Who is the main character of the story?")
+```
 ###
 ---
 
