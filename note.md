@@ -631,10 +631,41 @@ get_history()
 """
 ```
 
-### 5.4
+### 5.4 ConversationKGMemory
+`잘 이해못함. on Something 식으로 구분해서 저장하는듯`
+
+```python
+from langchain.memory import ConversationKGMemory
+from langchain.chat_models import ChatOpenAI
+
+chat = ChatOpenAI(temperature=0.1, model="gpt-4o-mini")
+
+memory = ConversationKGMemory(llm=chat, return_messages=True)
+
+def add_message(input, output):
+    memory.save_context({"input": input}, {"output": output})
 
 
-### 5.5 
+add_message("Hi I'm Nicolas, I live in South Korea", "Wow that is so cool!")
+memory.load_memory_variables({"input": "who is Nicolas"})
+"""
+{'history': [SystemMessage(content='On Nicolas: Nicolas lives in South Korea.')]}
+
+"""
+
+add_message("Nicolas likes kimchi", "Wow that is so cool!")
+memory.load_memory_variables({"inputs": "what does nicolas like"})
+"""
+{'history': [SystemMessage(content='On Nicolas: Nicolas lives in South Korea. Nicolas likes kimchi.')]}
+
+"""
+
+```
+
+
+### 5.5 Memory on LLMChain
+
+### 5.6
 
 ---
 
