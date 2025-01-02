@@ -665,7 +665,97 @@ memory.load_memory_variables({"inputs": "what does nicolas like"})
 
 ### 5.5 Memory on LLMChain
 
-### 5.6
+```python
+from langchain.memory import ConversationSummaryBufferMemory
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import LLMChain
+from langchain.prompts import PromptTemplate
+
+llm = ChatOpenAI(temperature=0.1, model="gpt-4o-mini")
+
+memory = ConversationSummaryBufferMemory(
+    llm=llm,
+    max_token_limit=120,
+    memory_key="chat_history",
+)
+
+template = """
+    You are a helpful AI talking to a human.
+
+    {chat_history}
+    Human:{question}
+    You:
+"""
+
+chain = LLMChain(
+    llm=llm,
+    memory=memory,
+    prompt=PromptTemplate.from_template(template),
+    verbose=True,
+)
+
+chain.predict(question="My name is Nico")
+chain.predict(question="I live in Seoul")
+chain.predict(question="What is my name?")
+ 
+```
+
+### 5.6 Chat Based Memory
+`memory output could be in two ways. one is just string and second is messages?`
+
+Just String:
+```python
+memory = ConversationSummaryBufferMemory(
+    llm=llm,
+    max_token_limit=120,
+    memory_key="chat_history",
+)
+
+memory.load_memory_variables({})
+
+# return in string
+```
+
+Messages:
+```python
+from langchain.memory import ConversationSummaryBufferMemory
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import LLMChain
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+llm = ChatOpenAI(temperature=0.1, model="gpt-4o-mini")
+
+memory = ConversationSummaryBufferMemory(
+    llm=llm,
+    max_token_limit=80,
+    # chat history is here.
+    memory_key="chat_history",
+    return_messages=True,
+)
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful AI taking to a human."),
+    # chat history is here too.
+    MessagesPlaceholder(variable_name="chat_history"),
+    ("human", "{question}"),
+])
+
+chain = LLMChain(
+    llm=llm,
+    memory=memory,
+    prompt=prompt,
+    verbose=True,
+)
+
+chain.predict(question="My name is Nico")
+chain.predict(question="I live in Seoul")
+chain.predict(question="What is my name?")
+```
+
+
+
+
+### 5.7
 
 ---
 
