@@ -983,6 +983,84 @@ chain = {"context": retriever, "question": RunnablePassthrough()} | prompt | llm
 
 chain.invoke("Who is the main character of the story?")
 ```
+### 6.9 Map Reduce LCEL Chain
+
+```python
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings  # Updated import
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import CacheBackedEmbeddings
+from langchain.document_loaders import TextLoader
+from langchain.vectorstores import FAISS
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema.runnable import RunnablePassthrough, RunnableLambda
+from langchain.storage import LocalFileStore
+
+llm = ChatOpenAI(
+    temperature=0.1,
+    model_name="gpt-4o-mini",
+)
+
+cache_dir = LocalFileStore("./.cache/")
+
+splitter = CharacterTextSplitter.from_tiktoken_encoder(
+    separator="\n",
+    chunk_size=600,
+    chunk_overlap=100,
+)
+loader = TextLoader("./files/chapter_one.txt")
+
+docs = loader.load_and_split(text_splitter=splitter)
+
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+
+cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
+
+vectorstore = FAISS.from_documents(docs, cached_embeddings)
+
+retriever = vectorstore.as_retriever()
+
+map_doc_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """
+            Use the following portion of a long document to see if any of the text is relevant to answer the question. Return any relevant text verbatim. If there is no relevant text, return : ''
+            -------
+            {context}
+            """,
+        ),
+        ("human", "{question}"),
+    ]
+)
+
+map_doc_chain = map_doc_prompt | llm
+
+def map_docs(inputs):
+    documents = inputs["documents"]
+    question = inputs["question"]
+    return "\n\n".join(
+        map_doc_chain.invoke(
+            {"context": doc.page_content, "question": question}
+        ).content
+        for doc in documents
+    )
+
+map_chain = {"documents": retriever, "question": RunnablePassthrough()} | RunnableLambda(map_docs)
+
+final_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", "Given the following extracted parts of a long document and a question, create a final answer. If you don't know the answer, just say that you don't know. Don't try to make up an answer. \n\n {context}"),
+        ("human", "{question}"),
+    ]
+)
+
+final_chain = {"question": RunnablePassthrough(), "context": map_chain}| final_prompt | llm
+
+final_chain.invoke("Describe where Winston lives.")
+```
+
+## 7.1 DOCUMENT GPT
+
 ###
 ---
 
