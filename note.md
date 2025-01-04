@@ -1094,6 +1094,20 @@ else:
 
 ```
 
+### 7.3 Multi Page
+
+```python
+# add "pages" folder on root folder. add .py files then that will be page.
+# st.set_page_confg function, you can add title and icon.
+
+import streamlit as st
+
+st.set_page_config(page_title="FullstackGPT Home", page_icon="🤖")
+
+st.title("FullstackGPT Home")
+
+```
+
 ---
 
 ## Problems
