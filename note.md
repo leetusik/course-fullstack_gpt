@@ -1108,6 +1108,73 @@ st.title("FullstackGPT Home")
 
 ```
 
+
+### 7.4 Chat Messages
+```python
+# cool features
+
+with st.chat_message("human"):
+    st.write("Hello, how are you?")
+
+with st.chat_message("ai"):
+    st.write("I'm fine, thank you!")
+
+with st.status("Generating response...", expanded=True) as status:
+    st.write("Step 1: Loading documents...")
+    time.sleep(1)
+    st.write("Step 2: Processing text...")
+    time.sleep(1.5)
+    st.write("Step 3: Generating embeddings...")
+    time.sleep(2)
+    st.write("Step 4: Creating vector store...")
+    time.sleep(1)
+    st.write("Step 5: Building prompt...")
+    time.sleep(0.5)
+    status.update(label="Error", state="error")
+
+st.chat_input("Ask me anything!")
+```
+
+```python
+# st.session_state
+# st.session_state required to implement chat function because without it, every time user input then whole page is refreshed. So no continuous chat.
+
+import time
+
+import streamlit as st
+
+st.set_page_config(page_title="DocumentGPT", page_icon="📄")
+
+st.title("DocumentGPT")
+
+# define fucntion first
+def send_message(message, role, save=True):
+    with st.chat_message(role):
+        st.write(message)
+    if save:
+        st.session_state.messages.append({"role": role, "content": message})
+
+
+# check if messages is in the st.session state. if doensn't have one, make one, else, then draw historical messages.
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+else:
+    for message in st.session_state.messages:
+        send_message(message["content"], message["role"], save=False)
+
+# take input from user
+input = st.chat_input("Ask me anything!")
+
+# draw new conversation.
+if input:
+    send_message(input, "human")
+    time.sleep(1)
+    send_message(f"you said: {input}", "ai")
+```
+
+
+###
+###
 ---
 
 ## Problems
