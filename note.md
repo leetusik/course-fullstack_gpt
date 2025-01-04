@@ -1059,9 +1059,41 @@ final_chain = {"question": RunnablePassthrough(), "context": map_chain}| final_p
 final_chain.invoke("Describe where Winston lives.")
 ```
 
-## 7.1 DOCUMENT GPT
+## 7 DOCUMENT GPT
 
-###
+### 7.1 Magic(st.write)
+
+```python
+import streamlit as st
+
+st.title("오늘 점심 뭐먹지")
+
+st.selectbox("메뉴 선택", ["한식", "중식", "양식", "**식당", "123비스트로"])
+
+```
+
+### 7.2 Data Flow
+`whole page refreshes when data changes.`
+
+```python
+from datetime import datetime
+
+import streamlit as st
+
+st.title("오늘 점심 뭐먹지")
+
+st.write(f"현재 시간: {datetime.now().strftime('%H:%M:%S')}")
+
+model = st.selectbox("choose your model", ["gpt-4o", "gpt-4o-mini"])
+
+if model == "gpt-4o":
+    st.write("gpt-4o is selected")
+else:
+    st.write("gpt-4o-mini is selected")
+    st.slider("choose your temperature", 0.0, 1.0, 0.5)
+
+```
+
 ---
 
 ## Problems
