@@ -1173,7 +1173,81 @@ if input:
 ```
 
 
-###
+### 7.6 Uploading Documents
+```python
+import streamlit as st
+# import things.
+from langchain.embeddings import CacheBackedEmbeddings
+from langchain.storage import LocalFileStore
+from langchain.text_splitter import CharacterTextSplitter
+from langchain_community.document_loaders import TextLoader
+from langchain_community.vectorstores import FAISS
+
+# from langchain_core.embeddings import CacheBackedEmbeddings
+from langchain_openai import OpenAIEmbeddings
+
+# set page config here. title, and icon
+st.set_page_config(page_title="DocumentGPT", page_icon="📄")
+
+st.title("DocumentGPT")
+
+# embed_file function. when you give file, return retriever.
+def embed_file(file):
+    # read content of file
+    file_content = file.read()
+    # set file path where the file will be stored
+    file_path = f"./.cache/files/{file.name}"
+    # create file and write it's content
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+    # make dir of embedding cache
+    cache_dir = LocalFileStore("./.cache/embeddings/{file.name}")
+    # loading file to do langchain thing. 
+    loader = TextLoader(file_path)
+    # 
+    splitter = CharacterTextSplitter(
+        separator="\n",
+        chunk_size=600,
+        chunk_overlap=100,
+    )
+    docs = loader.load_and_split(text_splitter=splitter)
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
+    vectorstore = FAISS.from_documents(
+        documents=docs,
+        embedding=cached_embeddings,
+    )
+    retriever = vectorstore.as_retriever()
+    return retriever
+
+
+file = st.file_uploader(
+    "Upload a document",
+    type=["txt"],
+)
+
+if file:
+    retriever = embed_file(file)
+    response = retriever.invoke("What is the main topic of the document?")
+    st.write(response)
+
+```
+
+### 7.7 Chat History
+```python
+@st.cache_data(show_spinner=True)
+def function(file):
+    return file
+
+...
+
+if file:
+    # if file doens't changed, streamlit will not rerun below function just return the cached data.
+    file = function(file)
+    print(file)
+
+st.user_input("hi")
+```
 ###
 ---
 
