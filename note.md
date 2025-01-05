@@ -1197,3 +1197,9 @@ NotImplementedError: get_num_tokens_from_messages() is not presently implemented
 4.3
     serialize : saving, loading
     making customExampleselector.. need to do good in here.
+
+7.6 
+    first doc of docs goes to the somehow get_full_path method's key. solve the problem with changing 
+    `cached_embeddings = CacheBackedEmbeddings(embeddings, cached_dir)`
+    to
+    `cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cached_dir)`

@@ -174,3 +174,4 @@ cython_debug/
 venv2
 files
 .cache/
+.streamlit/
