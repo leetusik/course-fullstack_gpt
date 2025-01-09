@@ -1442,6 +1442,11 @@ response = run_quiz_chain(docs, subject if subject else file.name)
 To get whole data from web page:
 opt1. use playwright & chromium
 playwright is like selenium. uses when website has a lot of js things.
+in order to use playwright, enter following command in terminal.
+```bash
+playwright install 
+```
+
 ```python
 import streamlit as st
 from langchain_community.document_loaders import AsyncChromiumLoader
@@ -1465,8 +1470,127 @@ if url:
 opt2. use page's sitemap
 
 
-###
-###
+### 10.2 SitemapLoader
+```python
+import streamlit as st
+from langchain_community.document_loaders import SitemapLoader
+
+# functionize and store cache for good.
+@st.cache_resource(show_spinner="Loading website...")
+def load_website(url):
+    loader = SitemapLoader(url)
+    loader.requests_per_second = 1
+    docs = loader.load()
+    return docs
+
+
+st.set_page_config(
+    page_title="SiteGPT",
+    page_icon="🖥️",
+)
+
+
+st.markdown(
+    """
+    # SiteGPT
+            
+    Ask questions about the content of a website.
+            
+    Start by writing the URL of the website on the sidebar.
+"""
+)
+
+
+with st.sidebar:
+    url = st.text_input(
+        "Write down a URL",
+        placeholder="https://example.com",
+    )
+
+
+if url:
+    if ".xml" not in url:
+        with st.sidebar:
+            st.error("Please write down a Sitemap URL.")
+    else:
+        docs = load_website(url)
+        st.write(docs)
+
+```
+
+### 10.3 Parsing Function
+```python
+import streamlit as st
+
+# use splitter if docs too long.
+# from langchain.text_splitter import CharacterTextSplitter
+from langchain_community.document_loaders import SitemapLoader
+
+# function for parsing+function. in the SitemapLoader. takes bs4 soup object and return value will be page_content. needed to return str.
+def parse_page(soup):
+    header = soup.find("nav", class_="p-navbar")
+    if header:
+        header.decompose()
+    footer = soup.find("footer", class_="p-footer")
+    if footer:
+        footer.decompose()
+    return str(soup.get_text())
+
+
+# caching for good.
+@st.cache_resource(show_spinner="Loading website...")
+def load_website(url):
+    # splitter = CharacterTextSplitter.from_tiktoken_encoder(
+    #     chunk_size=400, chunk_overlap=50
+    # )
+
+    # Initialize SitemapLoader. gives url, filter_urls, parsing_function..
+    loader = SitemapLoader(
+        url,
+        # search only urls that have "/career/" in them.
+        filter_urls=[r"^(.*\/career\/).*"],
+        # filtering page_content by custom function.
+        parsing_function=parse_page,
+    )
+    loader.requests_per_second = 1
+    # docs = loader.load_and_split(text_splitter=splitter)
+    docs = loader.load()
+    return docs
+
+
+st.set_page_config(
+    page_title="SiteGPT",
+    page_icon="🖥️",
+)
+
+
+st.markdown(
+    """
+    # SiteGPT
+            
+    Ask questions about the content of a website.
+            
+    Start by writing the URL of the website on the sidebar.
+"""
+)
+
+
+with st.sidebar:
+    url = st.text_input(
+        "Write down a URL",
+        placeholder="https://example.com",
+    )
+
+
+if url:
+    if ".xml" not in url:
+        with st.sidebar:
+            st.error("Please write down a Sitemap URL.")
+    else:
+        docs = load_website(url)
+        st.write(docs)
+
+```
 ###
 ###
 ###
