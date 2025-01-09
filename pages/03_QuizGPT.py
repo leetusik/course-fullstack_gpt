@@ -16,16 +16,7 @@ st.title("QuizGPT")
 
 class JsonOutputParser(BaseOutputParser):
     def parse(self, text):
-        # Ensure the input is a string
-        if not isinstance(text, str):
-            raise ValueError("Input must be a string")
-
-        # Clean up the text
-        text = text.replace("```", "").replace("json", "")
-
-        # Parse the JSON string into a dictionary
-        parsed_data = json.loads(text)
-        return parsed_data
+        return text.replace("```", "").replace("json", "")
 
 
 output_parser = JsonOutputParser()
@@ -42,6 +33,22 @@ def format_docs(docs):
     return "\n\n".join(document.page_content for document in docs)
 
 
+@st.cache_resource(show_spinner="Generating questions...")
+def run_quiz_chain(_docs, topic):
+    chain = {"context": questions_chain} | formatter_chain | output_parser
+    response = chain.invoke(_docs)
+    return response
+
+
+@st.cache_resource(show_spinner="Searching Wikipedia...")
+def get_wikipedia_docs(subject):
+    retriever = WikipediaRetriever(
+        top_k_results=2,
+    )
+    docs = retriever.get_relevant_documents(subject)
+    return docs
+
+
 questions_prompt = ChatPromptTemplate.from_messages(
     [
         (
@@ -49,7 +56,7 @@ questions_prompt = ChatPromptTemplate.from_messages(
             """
     You are a helpful assistant that is role playing as a teacher.
          
-    Based ONLY on the following context make 10 questions to test the user's knowledge about the text.
+    Based ONLY on the following context make 10 (TEN) questions minimum to test the user's knowledge about the text.
     
     Each question should have 4 answers, three of them must be incorrect and one should be correct.
          
@@ -239,16 +246,23 @@ with st.sidebar:
     elif option == "Wikipedia":
         subject = st.text_input("Search Wikipedia...")
         if subject:
-            retriever = WikipediaRetriever(
-                top_k_results=2,
-            )
-            with st.status("Searching Wikipedia..."):
-                docs = retriever.get_relevant_documents(subject)
-                st.write(docs)
+            docs = get_wikipedia_docs(subject)
 
 if not docs:
     st.markdown("Please upload a file or search Wikipedia to get started.")
 else:
-    chain = {"context": questions_chain} | formatter_chain
-    response = chain.invoke(docs)
-    st.write(response)
+    response = run_quiz_chain(docs, subject if subject else file.name)
+    response = json.loads(response)
+    with st.form("questions_form"):
+        for question in response["questions"]:
+            st.write(question["question"])
+            value = st.radio(
+                "Select an option.",
+                [answer["answer"] for answer in question["answers"]],
+                index=None,
+            )
+            if {"answer": value, "correct": True} in question["answers"]:
+                st.success("Correct!")
+            elif value is not None:
+                st.error("Wrong!")
+        button = st.form_submit_button()

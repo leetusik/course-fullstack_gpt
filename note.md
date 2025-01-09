@@ -1391,7 +1391,46 @@ result = some_chain.invoke({"context":"kimchi"})
 
 ```
 
-###
+### 9.6 Caching
+```python
+#functionize wikipedia retrieving
+#functionize run quiz chain
+@st.cache_data(show_spinner="Making quiz...")
+def run_quiz_chain(_docs, topic):
+    chain = {"context": questions_chain} | formatting_chain | output_parser
+    return chain.invoke(_docs)
+@st.cache_data(show_spinner="Searching Wikipedia...")
+def wiki_search(term):
+    retriever = WikipediaRetriever(top_k_results=5)
+    docs = retriever.get_relevant_documents(term)
+    return docs
+```
+
+### 9.7 Grading Questions
+```python
+response = run_quiz_chain(docs, subject if subject else file.name)
+    response = json.loads(response)
+    with st.form("questions_form"):
+        for question in response["questions"]:
+            st.write(question["question"])
+            value = st.radio(
+                "Select an option.",
+                [answer["answer"] for answer in question["answers"]],
+                index=None,
+            )
+            if {"answer": value, "correct": True} in question["answers"]:
+                st.success("Correct!")
+            elif value is not None:
+                st.error("Wrong!")
+        button = st.form_submit_button()
+```
+### 9.8 function calling [x]
+```python
+# there is a way to force llm to make output as what user want.
+# It's called function calling or tool calling. 
+```
+
+
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
 인자 (Argument) : 실제로 함수를 호출할 때 넘기는 변수값 (value)
