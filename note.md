@@ -1251,6 +1251,72 @@ st.user_input("hi")
 ###
 ---
 
+
+## 9. QuizGPT
+### 9.1 WikipediaRetriever
+```python
+
+import streamlit as st
+
+# import things. textloader and retiriever is from langchain community
+from langchain.text_splitter import CharacterTextSplitter
+from langchain_community.document_loaders import TextLoader
+from langchain_community.retrievers import WikipediaRetriever
+
+st.set_page_config(page_title="QuizGPT", page_icon="🎓")
+
+st.title("QuizGPT")
+
+# reuse of this function from DocumentGPT. No need to embed or smthing like that so just return splitted docs.
+@st.cache_resource(show_spinner="Splitting file...")
+def split_file(file):
+    file_content = file.read()
+    file_path = f"./.cache/quiz_files/{file.name}"
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+    loader = TextLoader(file_path)
+    splitter = CharacterTextSplitter.from_tiktoken_encoder(
+        separator="\n",
+        chunk_size=600,
+        chunk_overlap=100,
+    )
+    docs = loader.load_and_split(text_splitter=splitter)
+    return docs
+
+# So far, every thing showing things on QuizGPT is on the side bar.
+with st.sidebar:
+    # user can choose wherther upload a file or search from wikipedia. 
+    option = st.selectbox(
+        "Choose what you want to use",
+        options=["File", "Wikipedia"],
+    )
+
+    # If user choose file, then show file_uploader and split file.
+    if option == "File":
+        file = st.file_uploader("Upload a file", type=["txt"])
+        if file:
+            docs = split_file(file)
+            st.write(docs)
+    # If user choose wikipedia, show text_input.
+    elif option == "Wikipedia":
+        subject = st.text_input("Search Wikipedia...")
+        # if user enter subject, search it using WikipediaRetriever
+        if subject:
+            # select only top 2 documents. Initialize retriever.
+            retriever = WikipediaRetriever(
+                top_k_results=2,
+            )
+            # show spinning when getting docs. find docs using retriever's get_relevant_documents method.
+            with st.status("Searching Wikipedia..."):
+                docs = retriever.get_relevant_documents(subject)
+                st.write(docs)
+
+```
+###
+###
+###
+###
+###
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
 인자 (Argument) : 실제로 함수를 호출할 때 넘기는 변수값 (value)

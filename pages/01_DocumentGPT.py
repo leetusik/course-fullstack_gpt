@@ -3,12 +3,13 @@ import time
 import streamlit as st
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.embeddings import CacheBackedEmbeddings
+from langchain.memory import ConversationSummaryBufferMemory
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from langchain.storage import LocalFileStore
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
 from langchain_community.vectorstores import FAISS
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 st.set_page_config(page_title="DocumentGPT", page_icon="📄")
@@ -40,12 +41,36 @@ chat = ChatOpenAI(
     ],
 )
 
+chat_for_memory = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0.1,
+)
+
+
+# LCEL based memory
+@st.cache_resource
+def init_memory(_llm):
+    return ConversationSummaryBufferMemory(
+        llm=_llm,
+        max_token_limit=120,
+        return_messages=True,
+    )
+
+
+memory = init_memory(chat_for_memory)
+
+
+def load_memory(_):
+    return memory.load_memory_variables({})["history"]
+
+
 prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            "You are a helpful assistant that can answer questions about the document. Use ONLY following context to answer the question: {context}",
+            "You are a helpful assistant.: {context}",
         ),
+        MessagesPlaceholder(variable_name="history"),
         ("human", "{question}"),
     ]
 )
@@ -69,6 +94,15 @@ def paint_history():
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
+
+
+def save_memory(input, output):
+    memory.save_context({"input": input}, {"output": output})
+
+
+def invoke_chain(chain, message):
+    response = chain.invoke(message)
+    save_memory(message, response.content)
 
 
 @st.cache_resource(show_spinner="Embedding file...")
@@ -112,16 +146,18 @@ if file:
             {
                 "context": retriever | RunnableLambda(format_docs),
                 "question": RunnablePassthrough(),
+                "history": RunnableLambda(load_memory),
             }
             | prompt
             | chat
         )
         with st.chat_message("ai"):
-            response = chain.invoke(message)
+            invoke_chain(chain, message)
 
 
 else:
     st.session_state.messages = []
+    memory.clear()
     st.markdown(
         """
 Upload a document using sidebar's file uploader.\n
