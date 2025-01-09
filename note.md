@@ -1436,6 +1436,40 @@ response = run_quiz_chain(docs, subject if subject else file.name)
 # make switch that if it's on, then show correct answer if the user gave wrong answer. 
 ```
 
+## 10 SITEGPT
+
+### 10.1 AsyncChromiumLoader
+To get whole data from web page:
+opt1. use playwright & chromium
+playwright is like selenium. uses when website has a lot of js things.
+```python
+import streamlit as st
+from langchain_community.document_loaders import AsyncChromiumLoader
+from langchain_community.document_transformers import Html2TextTransformer
+
+st.set_page_config(page_title="SiteGPT", page_icon="🌐")
+
+st.title("SiteGPT")
+
+with st.sidebar:
+    url = st.text_input("Enter a URL", placeholder="https://www.example.com")
+
+if url:
+    loader = AsyncChromiumLoader([url])
+    docs = loader.load()
+    st.write(docs)
+    st.write("---")
+    docs = Html2TextTransformer().transform_documents(docs)
+    st.write(docs)
+```
+opt2. use page's sitemap
+
+
+###
+###
+###
+###
+###
 
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
