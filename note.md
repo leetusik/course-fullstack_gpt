@@ -1312,8 +1312,58 @@ with st.sidebar:
                 st.write(docs)
 
 ```
-###
-###
+### 9.2 gpt-4o-mini
+```python
+# using gpt-4o-mini good.
+```
+### 9.3 Question prompt
+```python
+# no new things
+if not docs:
+    st.markdown("Please upload a file or search Wikipedia to get started.")
+else:
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                """
+    You are a helpful assistant that is role playing as a teacher.
+         
+    Based ONLY on the following context make 10 questions to test the user's knowledge about the text.
+    
+    Each question should have 4 answers, three of them must be incorrect and one should be correct.
+         
+    Use (o) to signal the correct answer.
+         
+    Question examples:
+         
+    Question: What is the color of the ocean?
+    Answers: Red|Yellow|Green|Blue(o)
+         
+    Question: What is the capital or Georgia?
+    Answers: Baku|Tbilisi(o)|Manila|Beirut
+         
+    Question: When was Avatar released?
+    Answers: 2007|2001|2009(o)|1998
+         
+    Question: Who was Julius Caesar?
+    Answers: A Roman Emperor(o)|Painter|Actor|Model
+         
+    Your turn!
+         
+    Context: {context}
+""",
+            )
+        ]
+    )
+
+    chain = {"context": format_docs} | prompt | llm
+
+    start = st.button("Generate Quiz")
+    if start:
+        result = chain.invoke(docs)
+        st.write(result.content)
+```
 ###
 ###
 ###
