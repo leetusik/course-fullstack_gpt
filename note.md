@@ -1364,8 +1364,17 @@ else:
         result = chain.invoke(docs)
         st.write(result.content)
 ```
-###
-###
+### 9.4 Formatter prompt
+make a question prompt and then formatting prompt.
+```python
+questions_chain = {"context": format_docs} | questions_prompt | llm
+formatter_chain = formatting_prompt | llm
+
+questions = questions_chain.invoke(docs)
+formatted_questions = formatter_chain.invoke({"context": questions.content})
+```
+
+### 
 ###
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
