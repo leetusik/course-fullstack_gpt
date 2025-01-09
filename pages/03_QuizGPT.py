@@ -1,8 +1,9 @@
+import json
+
 import streamlit as st
 from langchain.callbacks import StdOutCallbackHandler
 from langchain.prompts import ChatPromptTemplate
-
-# from langchain.runnables import RunnablePassthrough
+from langchain.schema import BaseOutputParser
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
 from langchain_community.retrievers import WikipediaRetriever
@@ -11,6 +12,23 @@ from langchain_openai import ChatOpenAI
 st.set_page_config(page_title="QuizGPT", page_icon="🎓")
 
 st.title("QuizGPT")
+
+
+class JsonOutputParser(BaseOutputParser):
+    def parse(self, text):
+        # Ensure the input is a string
+        if not isinstance(text, str):
+            raise ValueError("Input must be a string")
+
+        # Clean up the text
+        text = text.replace("```", "").replace("json", "")
+
+        # Parse the JSON string into a dictionary
+        parsed_data = json.loads(text)
+        return parsed_data
+
+
+output_parser = JsonOutputParser()
 
 llm = ChatOpenAI(
     model="gpt-4o-mini",
@@ -186,7 +204,7 @@ formatting_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-formatter_chain = formatting_prompt | llm
+formatter_chain = formatting_prompt | llm | output_parser
 
 
 @st.cache_resource(show_spinner="Splitting file...")
@@ -231,7 +249,6 @@ with st.sidebar:
 if not docs:
     st.markdown("Please upload a file or search Wikipedia to get started.")
 else:
-    questions = questions_chain.invoke(docs)
-    st.write(questions.content)
-    formatted_questions = formatter_chain.invoke({"context": questions.content})
-    st.write(formatted_questions.content)
+    chain = {"context": questions_chain} | formatter_chain
+    response = chain.invoke(docs)
+    st.write(response)

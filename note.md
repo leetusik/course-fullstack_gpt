@@ -1373,8 +1373,24 @@ formatter_chain = formatting_prompt | llm
 questions = questions_chain.invoke(docs)
 formatted_questions = formatter_chain.invoke({"context": questions.content})
 ```
+### 9.5 Output parser
+```python
+# using outputparser
+from langchain.schema import BaseOutputParser
 
-### 
+class JsonOutputParser(BaseOutputParser):
+    def parse(self, text):
+        text = text.replace("```", "").replace("json","")
+        return json.loads(text)
+
+output_parser = JsonOutputParser()
+
+some_chain = prompt | llm | output_parser
+
+result = some_chain.invoke({"context":"kimchi"})
+
+```
+
 ###
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
