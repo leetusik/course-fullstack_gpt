@@ -1430,6 +1430,12 @@ response = run_quiz_chain(docs, subject if subject else file.name)
 # It's called function calling or tool calling. 
 ```
 
+### 9.9 Conclusions [x]
+```python
+# not serparating chains and formats, using tool calling to make questions.
+# make switch that if it's on, then show correct answer if the user gave wrong answer. 
+```
+
 
 ## Problems
 매개변수 (Parameter) : 함수를 정의할 때 사용되는 변수 (variable)
