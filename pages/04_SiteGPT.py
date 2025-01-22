@@ -1,34 +1,39 @@
+import os
+
+os.environ["USER_AGENT"] = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+)
+
 import streamlit as st
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import SitemapLoader
 
 # use splitter if docs too long.
-# from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.document_loaders import SitemapLoader
 
 
 def parse_page(soup):
-    header = soup.find("nav", class_="p-navbar")
-    if header:
-        header.decompose()
-    footer = soup.find("footer", class_="p-footer")
-    if footer:
-        footer.decompose()
+    # header = soup.find("nav", class_="p-navbar")
+    # if header:
+    #     header.decompose()
+    # footer = soup.find("footer", class_="p-footer")
+    # if footer:
+    #     footer.decompose()
     return str(soup.get_text())
 
 
 @st.cache_resource(show_spinner="Loading website...")
 def load_website(url):
-    # splitter = CharacterTextSplitter.from_tiktoken_encoder(
-    #     chunk_size=400, chunk_overlap=50
-    # )
+    splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+        chunk_size=1000, chunk_overlap=200
+    )
 
     loader = SitemapLoader(
         url,
-        filter_urls=[r"^(.*\/career\/).*"],
-        parsing_function=parse_page,
+        # filter_urls=[r"^(.*\/pokedex\/).*"],
+        # parsing_function=parse_page,
     )
     loader.requests_per_second = 1
-    # docs = loader.load_and_split(text_splitter=splitter)
-    docs = loader.load()
+    docs = loader.load_and_split(text_splitter=splitter)
     return docs
 
 
